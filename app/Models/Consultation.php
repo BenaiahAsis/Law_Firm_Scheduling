@@ -9,13 +9,14 @@ class Consultation extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
+   protected $fillable = [
         'user_id', 
         'legal_category', 
         'description', 
         'status', 
         'document_path', 
-        'scheduled_at' // Added here
+        'scheduled_at',
+        'admin_notes' 
     ];
 
     // This tells Laravel to treat this column as a Date object, not just plain text!

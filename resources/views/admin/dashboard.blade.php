@@ -90,9 +90,11 @@
                                                            class="w-full border-gray-300 rounded-md shadow-sm text-xs focus:border-indigo-500">
                                                 </div>
 
+                                                <textarea name="admin_notes" rows="2" placeholder="Add a note for the client..." class="w-full border-gray-300 rounded-md shadow-sm text-xs focus:border-indigo-500 mb-2 resize-none">{{ $case->admin_notes }}</textarea>
+
                                                 <button type="submit" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-2 px-3 rounded shadow-md text-xs transition-all mt-1">
-    Update Case
-</button>
+                                                    Update Case
+                                                </button>
                                             </form>
                                         </td>
                                     </tr>

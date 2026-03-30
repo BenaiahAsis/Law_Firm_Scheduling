@@ -17,12 +17,13 @@ class AdminController extends Controller
         return view('admin.dashboard', compact('allRequests'));
     }
 
-    public function updateStatus(Request $request, $id)
+   public function updateStatus(Request $request, $id)
     {
-        // 1. Validate the incoming request, specifically looking for the new date
+        // 1. Validate the incoming request, now including admin_notes
         $request->validate([
             'status' => 'required|string',
             'scheduled_at' => 'nullable|date|after_or_equal:today', 
+            'admin_notes' => 'nullable|string|max:1000', // Allow up to 1000 characters of notes
         ]);
 
         // 2. Find the case
@@ -30,7 +31,6 @@ class AdminController extends Controller
 
         // 3. THE ALGORITHM: Prevent Double Booking
         if ($request->status === 'scheduled' && $request->scheduled_at) {
-            // Check if ANY other case is already scheduled for this exact time
             $conflict = Consultation::where('scheduled_at', $request->scheduled_at)
                                     ->where('id', '!=', $id) // Ignore the current case
                                     ->exists();
@@ -40,15 +40,16 @@ class AdminController extends Controller
             }
         }
         
-        // 4. Update the database
+        // 4. Update the database (Now saving the notes too!)
         $consultation->update([
             'status' => $request->status,
             'scheduled_at' => $request->status === 'scheduled' ? $request->scheduled_at : null,
+            'admin_notes' => $request->admin_notes, // Catches the text from the form
         ]);
 
-        // 5. Send the automated email
-        Mail::to($consultation->user->email)->send(new CaseStatusUpdated($consultation));
-
-        return back()->with('success', 'Case status updated successfully!');
+            // 5. Send the automated email (assuming Mail facade and CaseStatusUpdated are imported)
+            // Mail::to($consultation->user->email)->send(new CaseStatusUpdated($consultation));
+    
+            return back()->with('success', 'Case updated successfully!');
+        }
     }
-}

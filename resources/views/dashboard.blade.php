@@ -78,7 +78,16 @@
                                     <tr>
                                         <td class="px-6 py-4 text-sm font-medium">{{ $case->legal_category }}</td>
                                         
-                                        <td class="px-6 py-4 text-sm text-gray-600">{{ Str::limit($case->description, 30) }}</td>
+                                        <td class="px-6 py-4">
+                                            <div class="text-sm text-gray-600">{{ Str::limit($case->description, 30) }}</div>
+                                            
+                                            @if($case->admin_notes)
+                                                <div class="mt-3 bg-blue-50 border-l-4 border-blue-500 p-3 rounded-r-md shadow-sm">
+                                                    <p class="text-[10px] font-bold text-blue-800 uppercase tracking-wider mb-1">Message from Attorney:</p>
+                                                    <p class="text-xs text-blue-900 italic">"{{ $case->admin_notes }}"</p>
+                                                </div>
+                                            @endif
+                                        </td>
                                         
                                         <td class="px-6 py-4">
                                             <span class="px-2 py-1 text-xs font-bold rounded-full bg-yellow-100 text-yellow-800">
