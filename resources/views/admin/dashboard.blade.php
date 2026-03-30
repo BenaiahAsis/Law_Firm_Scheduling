@@ -1,71 +1,112 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-red-600 leading-tight">
-            {{ __('Lawyer Administration Portal') }}
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Lawyer Master Dashboard') }}
         </h2>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border-t-4 border-red-600">
+            
+            @if (session('success'))
+                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6 shadow-sm">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6 shadow-sm font-bold">
+                    ⚠️ {{ session('error') }}
+                </div>
+            @endif
+
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border-t-4 border-indigo-600">
                 <div class="p-8 text-gray-900">
-                    <h3 class="text-xl font-bold mb-6">Incoming Legal Requests (All Clients)</h3>
+                    <h3 class="text-xl font-bold mb-6 text-gray-800">All Client Requests</h3>
 
-                    @if (session('success'))
-                        <div class="bg-green-100 text-green-700 px-4 py-3 rounded mb-4">
-                            {{ session('success') }}
-                        </div>
-                    @endif
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full border-collapse">
+                            <thead>
+                                <tr class="bg-gray-100">
+                                    <th class="px-6 py-3 text-left text-xs font-bold uppercase text-gray-600">Client</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold uppercase text-gray-600">Details</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold uppercase text-gray-600">Document</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold uppercase text-gray-600">Meeting Time</th>
+                                    <th class="px-6 py-3 text-left text-xs font-bold uppercase text-gray-600">Manage Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                @forelse($allRequests as $case)
+                                    <tr class="hover:bg-gray-50 transition duration-150">
+                                        <td class="px-6 py-4">
+                                            <div class="text-sm font-bold text-gray-900">{{ $case->user->name }}</div>
+                                            <div class="text-xs text-gray-500">{{ $case->user->email }}</div>
+                                        </td>
+                                        
+                                        <td class="px-6 py-4">
+                                            <span class="px-2 py-1 text-xs font-bold rounded-full bg-blue-100 text-blue-800 mb-1 inline-block">
+                                                {{ $case->legal_category }}
+                                            </span>
+                                            <div class="text-xs text-gray-600 mt-1">{{ Str::limit($case->description, 40) }}</div>
+                                        </td>
+                                        
+                                        <td class="px-6 py-4 text-center">
+                                            @if($case->document_path)
+                                                <a href="{{ asset('storage/' . $case->document_path) }}" target="_blank" class="inline-flex items-center text-indigo-600 hover:text-indigo-900 font-bold text-xs">
+                                                    📄 View
+                                                </a>
+                                            @else
+                                                <span class="text-gray-400 text-xs italic">None</span>
+                                            @endif
+                                        </td>
 
-                    <table class="min-w-full border">
-                        <thead>
-                            <tr class="bg-gray-100">
-                                <th class="px-6 py-3 text-left text-xs font-bold uppercase">Client Name</th>
-                                <th class="px-6 py-3 text-left text-xs font-bold uppercase">Category</th>
-                                <th class="px-6 py-3 text-left text-xs font-bold uppercase">Description</th>
-                                
-                                <th class="px-6 py-3 text-left text-xs font-bold uppercase">Attached Document</th>
-                                
-                                <th class="px-6 py-3 text-left text-xs font-bold uppercase">Update Status</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y">
-                            @foreach($allRequests as $request)
-                            <tr>
-                                <td class="px-6 py-4 font-bold">{{ $request->user->name }}</td>
-                                <td class="px-6 py-4">{{ $request->legal_category }}</td>
-                                <td class="px-6 py-4 text-sm">{{ $request->description }}</td>
-                                
-                                <td class="px-6 py-4">
-                                    @if($request->document_path)
-                                        <a href="{{ asset('storage/' . $request->document_path) }}" target="_blank" class="text-blue-600 hover:text-blue-900 underline text-sm font-bold">
-                                            View File
-                                        </a>
-                                    @else
-                                        <span class="text-gray-400 text-sm italic">No file</span>
-                                    @endif
-                                </td>
+                                        <td class="px-6 py-4 text-sm">
+                                            @if($case->scheduled_at)
+                                                <span class="font-bold text-green-700">
+                                                    {{ $case->scheduled_at->format('M d, Y') }}
+                                                </span><br>
+                                                <span class="text-xs text-gray-500">
+                                                    {{ $case->scheduled_at->format('g:i A') }}
+                                                </span>
+                                            @else
+                                                <span class="text-gray-400 text-xs italic">Not scheduled</span>
+                                            @endif
+                                        </td>
+                                        
+                                        <td class="px-6 py-4 align-top">
+                                            <form action="{{ route('admin.consultation.update', $case->id) }}" method="POST" x-data="{ currentStatus: '{{ strtolower($case->status) }}' }">
+                                                @csrf
+                                                @method('PATCH')
+                                                
+                                                <select name="status" x-model="currentStatus" class="w-full border-gray-300 rounded-md shadow-sm text-sm focus:border-indigo-500 mb-2">
+                                                    <option value="pending">Pending</option>
+                                                    <option value="scheduled">Scheduled</option>
+                                                    <option value="completed">Completed</option>
+                                                </select>
 
-                                <td class="px-6 py-4">
-                                    <form action="{{ route('admin.consultation.update', $request->id) }}" method="POST" class="flex items-center space-x-2">
-                                        @csrf
-                                        @method('PATCH')
-                                        <select name="status" class="text-sm border-gray-300 rounded-md shadow-sm focus:border-red-500 focus:ring-red-500">
-                                            <option value="pending" {{ $request->status == 'pending' ? 'selected' : '' }}>Pending</option>
-                                            <option value="scheduled" {{ $request->status == 'scheduled' ? 'selected' : '' }}>Scheduled</option>
-                                            <option value="completed" {{ $request->status == 'completed' ? 'selected' : '' }}>Completed</option>
-                                        </select>
-                                        <button type="submit" class="bg-red-600 text-white px-3 py-1 rounded text-xs font-bold hover:bg-red-700 shadow-sm">
-                                            SAVE
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                                                <div x-show="currentStatus === 'scheduled'" style="display: none;" class="mb-2">
+                                                    <input type="datetime-local" name="scheduled_at" 
+                                                           value="{{ $case->scheduled_at ? $case->scheduled_at->format('Y-m-d\TH:i') : '' }}" 
+                                                           class="w-full border-gray-300 rounded-md shadow-sm text-xs focus:border-indigo-500">
+                                                </div>
+
+                                                <button type="submit" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-2 px-3 rounded shadow-md text-xs transition-all mt-1">
+    Update Case
+</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="px-6 py-8 text-center text-gray-500 italic">No incoming requests to manage.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
+
         </div>
     </div>
 </x-app-layout>

@@ -19,18 +19,36 @@ class AdminController extends Controller
 
     public function updateStatus(Request $request, $id)
     {
-        // 1. Find the specific legal case by its ID
-        $consultation = Consultation::findOrFail($id);
-        
-        // 2. Update the status
-        $consultation->update([
-            'status' => $request->status
+        // 1. Validate the incoming request, specifically looking for the new date
+        $request->validate([
+            'status' => 'required|string',
+            'scheduled_at' => 'nullable|date|after_or_equal:today', 
         ]);
 
-        // 3. SEND THE AUTOMATED EMAIL!
+        // 2. Find the case
+        $consultation = Consultation::findOrFail($id);
+
+        // 3. THE ALGORITHM: Prevent Double Booking
+        if ($request->status === 'scheduled' && $request->scheduled_at) {
+            // Check if ANY other case is already scheduled for this exact time
+            $conflict = Consultation::where('scheduled_at', $request->scheduled_at)
+                                    ->where('id', '!=', $id) // Ignore the current case
+                                    ->exists();
+
+            if ($conflict) {
+                return back()->with('error', 'Double Booking Alert! Another client is already scheduled for this exact time.');
+            }
+        }
+        
+        // 4. Update the database
+        $consultation->update([
+            'status' => $request->status,
+            'scheduled_at' => $request->status === 'scheduled' ? $request->scheduled_at : null,
+        ]);
+
+        // 5. Send the automated email
         Mail::to($consultation->user->email)->send(new CaseStatusUpdated($consultation));
 
-        // 4. Send the lawyer back with a success message
-        return back()->with('success', 'Case status updated and email sent to client!');
+        return back()->with('success', 'Case status updated successfully!');
     }
 }
