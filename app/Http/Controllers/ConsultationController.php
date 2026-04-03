@@ -48,23 +48,26 @@ class ConsultationController extends Controller
 
 
     public function destroy($id)
-    {
-        // 1. Find the case, but ONLY if it belongs to the logged-in user
-        $consultation = Consultation::where('user_id', Auth::id())->findOrFail($id);
+{
+    // 1. Find the requested case
+    $consultation = Consultation::findOrFail($id);
 
-        // 2. Security Check: Prevent deletion if the lawyer is already processing it
-        if (strtolower($consultation->status) !== 'pending') {
-            return back()->with('error', 'You cannot cancel a request that is already scheduled or completed.');
-        }
-
-        // 3. Pro Feature: Delete the attached file from the server to save space
-        if ($consultation->document_path) {
-            Storage::disk('public')->delete($consultation->document_path);
-        }
-
-        // 4. Delete the database record
-        $consultation->delete();
-
-        return back()->with('status', 'Your legal request has been successfully cancelled.');
+    // 2. SECURITY AUDIT CHECK: Does this case actually belong to the logged-in user?
+    if ($consultation->user_id !== Auth::id()) {
+        // If they try to delete someone else's case, immediately block them with a 403 Forbidden error.
+        abort(403, 'Unauthorized action. You do not have permission to modify this record.');
     }
+
+    // 3. BUSINESS LOGIC CHECK: Are they allowed to cancel it right now?
+    // We only want them to cancel if the status is still "pending". 
+    if (strtolower($consultation->status) !== 'pending') {
+        return back()->with('error', 'You cannot cancel a case that has already been scheduled or completed.');
+    }
+
+    // 4. If they pass both security checks, safely delete it
+    $consultation->delete();
+
+    // 5. Redirect back with a success message
+    return back()->with('status', 'Your legal request has been successfully cancelled.');
+}
 }
