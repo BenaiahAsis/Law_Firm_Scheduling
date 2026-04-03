@@ -9,15 +9,39 @@ use App\Mail\CaseStatusUpdated; // The "Envelope" we just created
 
 class AdminController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // The Lawyer sees EVERYONE'S requests
-        $allRequests = Consultation::with('user')->latest()->get();
-        
+        // 1. Start a base query (and load the user relationship so we know whose case it is)
+        $query = Consultation::with('user')->latest();
+
+        // 2. SEARCH LOGIC: Did she type something in the search bar?
+        if ($request->filled('search')) {
+            $searchTerm = $request->input('search');
+            
+            $query->where(function ($q) use ($searchTerm) {
+                // Search the case description or category
+                $q->where('legal_category', 'like', "%{$searchTerm}%")
+                  ->orWhere('description', 'like', "%{$searchTerm}%")
+                  // Search the client's actual name
+                  ->orWhereHas('user', function ($userQuery) use ($searchTerm) {
+                      $userQuery->where('name', 'like', "%{$searchTerm}%");
+                  });
+            });
+        }
+
+        // 3. FILTER LOGIC: Did she select a specific status from a dropdown?
+        if ($request->filled('status') && $request->input('status') !== 'all') {
+            $query->where('status', $request->input('status'));
+        }
+
+        // 4. Execute the query and paginate the results (10 per page)
+        // CHANGED: Renamed variable to $allRequests to match your Blade view!
+        $allRequests = $query->paginate(10)->withQueryString();
+
         return view('admin.dashboard', compact('allRequests'));
     }
 
-   public function updateStatus(Request $request, $id)
+    public function updateStatus(Request $request, $id)
     {
         // 1. Validate the incoming request, now including admin_notes
         $request->validate([
@@ -47,9 +71,9 @@ class AdminController extends Controller
             'admin_notes' => $request->admin_notes, // Catches the text from the form
         ]);
 
-            // 5. Send the automated email (assuming Mail facade and CaseStatusUpdated are imported)
-            // Mail::to($consultation->user->email)->send(new CaseStatusUpdated($consultation));
+        // 5. Send the automated email (assuming Mail facade and CaseStatusUpdated are imported)
+        // Mail::to($consultation->user->email)->send(new CaseStatusUpdated($consultation));
     
-            return back()->with('success', 'Case updated successfully!');
-        }
+        return back()->with('success', 'Case updated successfully!');
     }
+}

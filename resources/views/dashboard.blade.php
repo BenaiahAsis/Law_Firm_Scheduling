@@ -27,29 +27,42 @@
 
                     <form action="{{ route('consultation.store') }}" method="POST" class="space-y-6" enctype="multipart/form-data">
                         @csrf
+                        
                         <div>
                             <label class="block font-semibold text-sm text-gray-700 mb-1">Service Category</label>
-                            <select name="legal_category" class="w-full border-gray-300 rounded-md shadow-sm">
-                                <option value="Notary">Notary Service</option>
-                                <option value="Civil Case">Civil Case</option>
-                                <option value="Family Law">Family Law</option>
-                                <option value="Corporate">Corporate Law</option>
+                            <select name="legal_category" class="w-full rounded-md shadow-sm @error('legal_category') border-red-500 focus:border-red-500 focus:ring-red-500 @else border-gray-300 focus:border-blue-500 focus:ring-blue-500 @enderror">
+                                <option value="Notary" {{ old('legal_category') == 'Notary' ? 'selected' : '' }}>Notary Service</option>
+                                <option value="Civil Case" {{ old('legal_category') == 'Civil Case' ? 'selected' : '' }}>Civil Case</option>
+                                <option value="Family Law" {{ old('legal_category') == 'Family Law' ? 'selected' : '' }}>Family Law</option>
+                                <option value="Corporate" {{ old('legal_category') == 'Corporate' ? 'selected' : '' }}>Corporate Law</option>
                             </select>
+                            @error('legal_category')
+                                <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <div>
                             <label class="block font-semibold text-sm text-gray-700 mb-1">Case Description</label>
-                            <textarea name="description" rows="4" class="w-full border-gray-300 rounded-md shadow-sm" placeholder="Briefly describe your situation..."></textarea>
+                            <textarea name="description" rows="4" class="w-full rounded-md shadow-sm @error('description') border-red-500 focus:border-red-500 focus:ring-red-500 @else border-gray-300 focus:border-blue-500 focus:ring-blue-500 @enderror" placeholder="Briefly describe your situation...">{{ old('description') }}</textarea>
+                            @error('description')
+                                <p class="text-red-500 text-xs font-medium mt-1 flex items-center">
+                                    <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                    {{ $message }}
+                                </p>
+                            @enderror
                         </div>
 
                         <div>
                             <label class="block font-semibold text-sm text-gray-700 mb-1">Upload Supporting Document (Optional)</label>
-                            <input type="file" name="document" class="w-full border-gray-300 rounded-md shadow-sm text-sm focus:border-blue-500">
+                            <input type="file" name="document" class="w-full rounded-md shadow-sm text-sm @error('document') border-red-500 focus:border-red-500 focus:ring-red-500 @else border-gray-300 focus:border-blue-500 focus:ring-blue-500 @enderror">
                             <p class="mt-1 text-xs text-gray-500">Accepted formats: PDF, JPG, PNG (Max 2MB)</p>
+                            @error('document')
+                                <p class="text-red-500 text-xs font-medium mt-1">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <div class="flex justify-end">
-                            <button type="submit" class="bg-blue-700 text-white px-6 py-3 rounded-md font-bold uppercase text-xs shadow-md hover:bg-blue-800">
+                            <button type="submit" class="bg-blue-700 text-white px-6 py-3 rounded-md font-bold uppercase text-xs shadow-md hover:bg-blue-800 transition duration-150">
                                 Submit Legal Request
                             </button>
                         </div>

@@ -30,9 +30,9 @@ Route::middleware('auth')->group(function () {
 });
 
 // ADMIN/LAWYER ROUTES (Protected by the 'admin' bouncer)
-Route::middleware(['auth', 'admin'])->group(function () {
-    Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
-    Route::patch('/admin/consultation/{id}/status', [AdminController::class, 'updateStatus'])->name('admin.consultation.update');
+Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
+    Route::patch('/consultation/{id}/status', [AdminController::class, 'updateStatus'])->name('consultation.update');
 });
 
 require __DIR__.'/auth.php';

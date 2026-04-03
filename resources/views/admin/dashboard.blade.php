@@ -20,6 +20,43 @@
                 </div>
             @endif
 
+            <div class="mb-6 bg-white p-5 rounded-lg shadow-sm border border-gray-200">
+                <form action="{{ route('admin.dashboard') }}" method="GET" class="flex flex-col sm:flex-row gap-4 items-end sm:items-center">
+                    
+                    <div class="flex-1 w-full">
+                        <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Search Cases</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            </div>
+                            <input type="text" name="search" value="{{ request('search') }}" placeholder="Search client name, category, or description..." class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm shadow-sm">
+                        </div>
+                    </div>
+
+                    <div class="w-full sm:w-48">
+                        <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1">Filter Status</label>
+                        <select name="status" class="block w-full py-2 pl-3 pr-10 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm shadow-sm" onchange="this.form.submit()">
+                            <option value="all" {{ request('status') === 'all' ? 'selected' : '' }}>All Statuses</option>
+                            <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending Review</option>
+                            <option value="scheduled" {{ request('status') === 'scheduled' ? 'selected' : '' }}>Scheduled</option>
+                            <option value="completed" {{ request('status') === 'completed' ? 'selected' : '' }}>Completed</option>
+                        </select>
+                    </div>
+
+                    <div class="flex space-x-2 w-full sm:w-auto mt-4 sm:mt-0">
+                        <button type="submit" class="w-full sm:w-auto inline-flex justify-center items-center py-2 px-4 border border-transparent shadow-sm text-sm font-bold rounded-md text-white bg-indigo-700 hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Search
+                        </button>
+                        
+                        @if(request('search') || (request('status') && request('status') !== 'all'))
+                            <a href="{{ route('admin.dashboard') }}" class="w-full sm:w-auto inline-flex justify-center items-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-bold rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                Clear
+                            </a>
+                        @endif
+                    </div>
+                </form>
+            </div>
+
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border-t-4 border-indigo-600">
                 <div class="p-8 text-gray-900">
                     <h3 class="text-xl font-bold mb-6 text-gray-800">All Client Requests</h3>
@@ -38,19 +75,19 @@
                             <tbody class="divide-y divide-gray-200">
                                 @forelse($allRequests as $case)
                                     <tr class="hover:bg-gray-50 transition duration-150">
-                                        <td class="px-6 py-4">
+                                        <td class="px-6 py-4 align-top">
                                             <div class="text-sm font-bold text-gray-900">{{ $case->user->name }}</div>
                                             <div class="text-xs text-gray-500">{{ $case->user->email }}</div>
                                         </td>
                                         
-                                        <td class="px-6 py-4">
+                                        <td class="px-6 py-4 align-top">
                                             <span class="px-2 py-1 text-xs font-bold rounded-full bg-blue-100 text-blue-800 mb-1 inline-block">
                                                 {{ $case->legal_category }}
                                             </span>
                                             <div class="text-xs text-gray-600 mt-1">{{ Str::limit($case->description, 40) }}</div>
                                         </td>
                                         
-                                        <td class="px-6 py-4 text-center">
+                                        <td class="px-6 py-4 text-center align-top">
                                             @if($case->document_path)
                                                 <a href="{{ asset('storage/' . $case->document_path) }}" target="_blank" class="inline-flex items-center text-indigo-600 hover:text-indigo-900 font-bold text-xs">
                                                     📄 View
@@ -60,7 +97,7 @@
                                             @endif
                                         </td>
 
-                                        <td class="px-6 py-4 text-sm">
+                                        <td class="px-6 py-4 text-sm align-top">
                                             @if($case->scheduled_at)
                                                 <span class="font-bold text-green-700">
                                                     {{ $case->scheduled_at->format('M d, Y') }}
@@ -73,7 +110,7 @@
                                             @endif
                                         </td>
                                         
-                                        <td class="px-6 py-4 align-top">
+                                        <td class="px-6 py-4 align-top w-64">
                                             <form action="{{ route('admin.consultation.update', $case->id) }}" method="POST" x-data="{ currentStatus: '{{ strtolower($case->status) }}' }">
                                                 @csrf
                                                 @method('PATCH')
@@ -100,13 +137,24 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="px-6 py-8 text-center text-gray-500 italic">No incoming requests to manage.</td>
+                                        <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                                            <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                                            </svg>
+                                            <span class="italic font-medium">No cases match your search criteria.</span>
+                                        </td>
                                     </tr>
                                 @endforelse
                             </tbody>
                         </table>
                     </div>
                 </div>
+            </div>
+
+            <div class="mt-6">
+                @if(method_exists($allRequests, 'links'))
+                    {{ $allRequests->links() }}
+                @endif
             </div>
 
         </div>
