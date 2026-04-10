@@ -29,10 +29,13 @@ Route::middleware('auth')->group(function () {
     Route::delete('/consultation/{id}', [ConsultationController::class, 'destroy'])->name('consultation.destroy');
 });
 
-// ADMIN/LAWYER ROUTES (Protected by the 'admin' bouncer)
+// ADMIN/LAWYER ROUTES
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
     Route::patch('/consultation/{id}/status', [AdminController::class, 'updateStatus'])->name('consultation.update');
+    
+    // NEW: The Visual Calendar Route
+    Route::get('/calendar', [AdminController::class, 'calendar'])->name('calendar'); 
 });
 
 require __DIR__.'/auth.php';

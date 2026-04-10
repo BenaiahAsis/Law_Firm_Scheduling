@@ -10,6 +10,7 @@ use App\Mail\CaseStatusUpdated; // The "Envelope" we just created
 class AdminController extends Controller
 {
     public function index(Request $request)
+    
     {
         // 1. Start a base query (and load the user relationship so we know whose case it is)
         $query = Consultation::with('user')->latest();
@@ -40,6 +41,30 @@ class AdminController extends Controller
 
         return view('admin.dashboard', compact('allRequests'));
     }
+
+    
+      public function calendar()
+    {
+        // 1. Fetch only cases that have been officially scheduled
+        $scheduledCases = Consultation::with('user')
+            ->where('status', 'scheduled')
+            ->whereNotNull('scheduled_at')
+            ->get()
+            ->map(function ($case) {
+                // 2. Format the data exactly how FullCalendar.js expects it
+                return [
+                    'title' => $case->user->name . ' (' . $case->legal_category . ')',
+                    'start' => $case->scheduled_at->format('Y-m-d\TH:i:s'),
+                    'url'   => route('admin.dashboard', ['search' => $case->user->name]), // Clicking the calendar event searches for the user!
+                    'color' => '#4f46e5' // Indigo color for the events
+                ];
+            });
+
+        return view('admin.calendar', compact('scheduledCases'));
+    }
+
+
+
 
     public function updateStatus(Request $request, $id)
     {

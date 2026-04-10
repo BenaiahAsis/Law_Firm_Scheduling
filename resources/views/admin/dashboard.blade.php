@@ -1,8 +1,14 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Lawyer Master Dashboard') }}
-        </h2>
+        <div class="flex justify-between items-center">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                {{ __('Lawyer Master Dashboard') }}
+            </h2>
+            <a href="{{ route('admin.calendar') }}" class="bg-indigo-600 text-white px-5 py-2 rounded-md text-sm font-bold shadow hover:bg-indigo-700 transition flex items-center">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                View Master Calendar
+            </a>
+        </div>
     </x-slot>
 
     <div class="py-12">
@@ -111,7 +117,12 @@
                                         </td>
                                         
                                         <td class="px-6 py-4 align-top w-64">
-                                            <form action="{{ route('admin.consultation.update', $case->id) }}" method="POST" x-data="{ currentStatus: '{{ strtolower($case->status) }}' }">
+                                            <form action="{{ route('admin.consultation.update', $case->id) }}" method="POST" 
+                                                  x-data="{ 
+                                                      currentStatus: '{{ strtolower($case->status) }}',
+                                                      selectedDate: '{{ $case->scheduled_at ? $case->scheduled_at->format('Y-m-d') : '' }}',
+                                                      selectedTime: '{{ $case->scheduled_at ? $case->scheduled_at->format('H:i:s') : '' }}'
+                                                  }">
                                                 @csrf
                                                 @method('PATCH')
                                                 
@@ -121,10 +132,21 @@
                                                     <option value="completed">Completed</option>
                                                 </select>
 
-                                                <div x-show="currentStatus === 'scheduled'" style="display: none;" class="mb-2">
-                                                    <input type="datetime-local" name="scheduled_at" 
-                                                           value="{{ $case->scheduled_at ? $case->scheduled_at->format('Y-m-d\TH:i') : '' }}" 
-                                                           class="w-full border-gray-300 rounded-md shadow-sm text-xs focus:border-indigo-500">
+                                                <div x-show="currentStatus === 'scheduled'" style="display: none;" class="mb-2 space-y-2">
+                                                    
+                                                    <input type="hidden" name="scheduled_at" :value="selectedDate && selectedTime ? selectedDate + ' ' + selectedTime : ''">
+                                                    
+                                                    <input type="date" x-model="selectedDate" class="w-full border-gray-300 rounded-md shadow-sm text-xs focus:border-indigo-500">
+                                                    
+                                                    <select x-model="selectedTime" class="w-full border-gray-300 rounded-md shadow-sm text-xs focus:border-indigo-500">
+                                                        <option value="">Select specific time...</option>
+                                                        <option value="13:00:00">1:00 PM</option>
+                                                        <option value="13:30:00">1:30 PM</option>
+                                                        <option value="14:00:00">2:00 PM</option>
+                                                        <option value="14:30:00">2:30 PM</option>
+                                                        <option value="15:00:00">3:00 PM</option>
+                                                        <option value="15:30:00">3:30 PM</option>
+                                                    </select>
                                                 </div>
 
                                                 <textarea name="admin_notes" rows="2" placeholder="Add a note for the client..." class="w-full border-gray-300 rounded-md shadow-sm text-xs focus:border-indigo-500 mb-2 resize-none">{{ $case->admin_notes }}</textarea>
