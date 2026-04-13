@@ -8,7 +8,7 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border-t-4 border-blue-600">
+            <div class="bg-slate-50 overflow-hidden shadow-sm sm:rounded-lg border-t-4 border-blue-600">
                 <div class="p-8 text-gray-900">
                     <h3 class="text-2xl font-bold mb-2 text-blue-900">Request a Legal Consultation</h3>
                     <p class="text-gray-600 mb-6">Fill out the form below and our legal team will review your request.</p>
@@ -96,7 +96,7 @@
                 </div>
             </div>
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border-t-4 border-gray-400">
+            <div class="bg-slate-50 overflow-hidden shadow-sm sm:rounded-lg border-t-4 border-gray-400">
                 <div class="p-8 text-gray-900">
                     <h3 class="text-xl font-bold mb-6 text-gray-800">Your Legal Request History</h3>
 

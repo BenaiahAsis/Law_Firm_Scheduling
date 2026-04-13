@@ -17,13 +17,13 @@
         input:-webkit-autofill:hover, 
         input:-webkit-autofill:focus, 
         input:-webkit-autofill:active{
-            -webkit-box-shadow: 0 0 0 30px white inset !important;
+            -webkit-box-shadow: 0 0 0 30px #f8fafc inset !important;
             -webkit-text-fill-color: #0f172a !important; /* slate-900 text */
             transition: background-color 5000s ease-in-out 0s;
         }
     </style>
 </head>
-<body class="font-sans-custom text-slate-900 antialiased bg-white selection:bg-slate-900 selection:text-white">
+<body class="font-sans-custom text-slate-900 antialiased bg-slate-50 selection:bg-slate-900 selection:text-white">
     <div class="min-h-screen flex">
         
         <div class="hidden lg:flex lg:w-[60%] bg-slate-950 items-center justify-start relative overflow-hidden">
@@ -67,7 +67,7 @@
             </div>
         </div>
 
-        <div class="w-full lg:w-[40%] flex flex-col justify-center px-8 sm:px-16 py-12 bg-white relative">
+        <div class="w-full lg:w-[40%] flex flex-col justify-center px-8 sm:px-16 py-12 bg-slate-50 relative">
             
             <div class="w-full max-w-[480px] mx-auto">
                 
